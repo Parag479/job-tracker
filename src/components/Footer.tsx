@@ -65,7 +65,7 @@ const Footer = () => {
     <FooterContainer>
       <FooterContent>
         <Attribution>
-          Designed by Parag Dubeyy – For every dreamer who won't quit.
+          Designed by Parag Dubey – For every dreamer who won't quit.
         </Attribution>
         <ThemeToggle onClick={toggleTheme}>
           <IconWrapper>
