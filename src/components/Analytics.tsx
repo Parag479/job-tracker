@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
-import { FaPlus } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import { IconContext } from 'react-icons';
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Tooltip, Legend, Title);
 
-const DashboardContainer = styled.div`
+const AnalyticsContainer = styled.div`
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -17,7 +15,7 @@ const DashboardContainer = styled.div`
   padding-top: 80px;
 `;
 
-const DashboardHeader = styled.div`
+const AnalyticsHeader = styled.div`
   margin-bottom: 2rem;
   padding: 1.5rem;
   background: var(--bg-secondary);
@@ -128,40 +126,6 @@ const ChartHeader = styled.h3`
   font-weight: 600;
 `;
 
-const AddJobButton = styled.button`
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--gradient-purple);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  z-index: 10;
-
-  &:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  &:active {
-    transform: translateY(0) scale(0.95);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-`;
-
 interface Job {
   id: string;
   company: string;
@@ -170,10 +134,9 @@ interface Job {
   date: string;
 }
 
-const Dashboard = () => {
+const Analytics = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch jobs from localStorage
@@ -244,22 +207,8 @@ const Dashboard = () => {
       {
         label: 'Applications',
         data: monthlyData.counts,
-        backgroundColor: [
-          'rgba(147, 51, 234, 0.8)',  // Purple
-          'rgba(59, 130, 246, 0.8)',  // Blue
-          'rgba(16, 185, 129, 0.8)',  // Green
-          'rgba(245, 158, 11, 0.8)',  // Yellow
-          'rgba(236, 72, 153, 0.8)',  // Pink
-          'rgba(14, 165, 233, 0.8)',  // Sky Blue
-        ],
-        borderColor: [
-          'rgba(147, 51, 234, 1)',
-          'rgba(59, 130, 246, 1)',
-          'rgba(16, 185, 129, 1)',
-          'rgba(245, 158, 11, 1)',
-          'rgba(236, 72, 153, 1)',
-          'rgba(14, 165, 233, 1)',
-        ],
+        backgroundColor: 'rgba(147, 51, 234, 0.8)',
+        borderColor: 'rgba(147, 51, 234, 1)',
         borderWidth: 2,
         borderRadius: 8,
         borderSkipped: false,
@@ -268,27 +217,13 @@ const Dashboard = () => {
   };
 
   const monthlyChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: monthlyData.months,
     datasets: [
       {
         label: 'Applications',
-        data: [12, 19, 15, 8, 10, 14],
-        backgroundColor: [
-          'rgba(147, 51, 234, 0.8)',  // Purple
-          'rgba(59, 130, 246, 0.8)',  // Blue
-          'rgba(16, 185, 129, 0.8)',  // Green
-          'rgba(245, 158, 11, 0.8)',  // Yellow
-          'rgba(236, 72, 153, 0.8)',  // Pink
-          'rgba(14, 165, 233, 0.8)',  // Sky Blue
-        ],
-        borderColor: [
-          'rgba(147, 51, 234, 1)',
-          'rgba(59, 130, 246, 1)',
-          'rgba(16, 185, 129, 1)',
-          'rgba(245, 158, 11, 1)',
-          'rgba(236, 72, 153, 1)',
-          'rgba(14, 165, 233, 1)',
-        ],
+        data: monthlyData.counts,
+        backgroundColor: 'rgba(147, 51, 234, 0.8)',
+        borderColor: 'rgba(147, 51, 234, 1)',
         borderWidth: 2,
         borderRadius: 8,
         borderSkipped: false,
@@ -359,7 +294,7 @@ const Dashboard = () => {
             size: 12,
             weight: 'normal' as const
           },
-          stepSize: 5
+          stepSize: 1
         }
       }
     }
@@ -378,16 +313,16 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <DashboardContainer>Loading...</DashboardContainer>;
+    return <AnalyticsContainer>Loading...</AnalyticsContainer>;
   }
 
   return (
     <IconContext.Provider value={{ size: '24px', style: { verticalAlign: 'middle' } }}>
-      <DashboardContainer>
-        <DashboardHeader>
-          <PageTitle>Dashboard</PageTitle>
+      <AnalyticsContainer>
+        <AnalyticsHeader>
+          <PageTitle>Analytics</PageTitle>
           <Subtitle>Track your job search progress</Subtitle>
-        </DashboardHeader>
+        </AnalyticsHeader>
 
         <StatsGrid>
           <StatCard>
@@ -437,13 +372,9 @@ const Dashboard = () => {
             <Bar data={monthlyChartData} options={barOptions} />
           </div>
         </MonthlyChartCard>
-
-        <AddJobButton onClick={() => navigate('/add-job')}>
-          {FaPlus({})}
-        </AddJobButton>
-      </DashboardContainer>
+      </AnalyticsContainer>
     </IconContext.Provider>
   );
 };
 
-export default Dashboard; 
+export default Analytics; 

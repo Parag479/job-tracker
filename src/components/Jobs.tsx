@@ -1,95 +1,271 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import * as Icons from 'react-icons/fa';
+import styled, { keyframes } from 'styled-components';
+import { FaBriefcase, FaBuilding, FaCalendar, FaLink, FaPlus } from 'react-icons/fa';
+import { IconContext } from 'react-icons';
+import AddJob from './AddJob';
 
-const JobsContainer = styled.div`
-  padding: 2rem;
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const Container = styled.div`
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
 `;
 
-const JobsHeader = styled.div`
+const Header = styled.div`
   margin-bottom: 2rem;
+  text-align: center;
 `;
 
-const PageTitle = styled.h1`
+const Title = styled.h1`
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
 `;
 
 const Subtitle = styled.p`
   color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+`;
+
+const SearchBar = styled.input`
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+`;
+
+const FilterBar = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+`;
+
+const FilterButton = styled.button<{ active?: boolean }>`
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 20px;
+  background: ${props => props.active ? 'var(--gradient-purple)' : 'var(--bg-secondary)'};
+  color: ${props => props.active ? 'white' : 'var(--text-secondary)'};
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const JobsGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
 `;
 
 const JobCard = styled.div`
-  background-color: var(--bg-secondary);
+  background: var(--bg-secondary);
+  border-radius: 12px;
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: ${fadeIn} 0.5s ease-out;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-purple);
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  }
 `;
 
-const JobInfo = styled.div`
+const CompanyLogo = styled.div`
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  background: var(--gradient-mint);
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: white;
+  font-size: 1.5rem;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+const JobTitle = styled.h3`
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+`;
+
+const CompanyName = styled.div`
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 `;
 
-const Company = styled.h3`
-  color: var(--text-primary);
-  font-size: 1.2rem;
-  margin: 0;
-`;
-
-const Position = styled.p`
-  color: var(--text-secondary);
-  font-size: 1rem;
-  margin: 0;
-`;
-
-const Status = styled.span<{ status: string }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  color: white;
-  display: inline-block;
-  width: fit-content;
-`;
-
-const DateText = styled.p`
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin: 0;
-`;
-
-const Actions = styled.div`
+const JobDetails = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
-  align-items: flex-start;
+  margin-top: 1rem;
+`;
+
+const Detail = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+`;
+
+const StatusBadge = styled.div<{ status: string }>`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: white;
+  background: ${props => {
+    switch (props.status) {
+      case 'applied':
+        return 'var(--gradient-purple)';
+      case 'interview':
+        return 'var(--gradient-mint)';
+      case 'offer':
+        return 'var(--gradient-blue)';
+      case 'rejected':
+        return 'linear-gradient(135deg, #FF6B6B 0%, #FF4949 100%)';
+      default:
+        return 'var(--gradient-purple)';
+    }
+  }};
 `;
 
 const ActionButton = styled.button`
-  background: none;
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 1rem;
   border: none;
-  color: var(--text-secondary);
+  border-radius: 8px;
+  background: var(--gradient-purple);
+  color: white;
+  font-weight: 500;
   cursor: pointer;
-  padding: 0.25rem;
-  transition: color 0.2s;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 
   &:hover {
-    color: var(--primary-color);
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+`;
+
+const IconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const AddJobButton = styled.button`
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--gradient-purple);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   svg {
-    font-size: 1.25rem;
+    width: 24px;
+    height: 24px;
   }
 `;
 
@@ -267,6 +443,9 @@ const Jobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddJob, setShowAddJob] = useState(false);
 
   useEffect(() => {
     const storedJobs = localStorage.getItem('jobs');
@@ -278,6 +457,12 @@ const Jobs = () => {
   const saveJobs = (newJobs: Job[]) => {
     setJobs(newJobs);
     localStorage.setItem('jobs', JSON.stringify(newJobs));
+  };
+
+  const handleAddJob = (newJob: Job) => {
+    const updatedJobs = [...jobs, newJob];
+    saveJobs(updatedJobs);
+    setShowAddJob(false);
   };
 
   const handleEdit = (job: Job) => {
@@ -297,56 +482,110 @@ const Jobs = () => {
       ? jobs.map(j => j.id === job.id ? job : j)
       : [...jobs, { ...job, id: String(Date.now()) }];
     saveJobs(newJobs);
+    setIsModalOpen(false);
   };
 
+  const filteredJobs = jobs.filter(job => {
+    const matchesFilter = filter === 'all' || job.status === filter;
+    const matchesSearch = job.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         job.company.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
+  if (showAddJob) {
+    return <AddJob onAddJob={handleAddJob} onBack={() => setShowAddJob(false)} />;
+  }
+
   return (
-    <JobsContainer>
-      <JobsHeader>
-        <PageTitle>Jobs</PageTitle>
-        <Subtitle>Manage your job applications</Subtitle>
-      </JobsHeader>
+    <IconContext.Provider value={{ size: '14px', style: { verticalAlign: 'middle' } }}>
+      <Container>
+        <Header>
+          <Title>Job Applications</Title>
+          <Subtitle>Track and manage your job applications in one place</Subtitle>
+        </Header>
 
-      <Button
-        variant="primary"
-        onClick={() => {
-          setSelectedJob(null);
-          setIsModalOpen(true);
-        }}
-        style={{ marginBottom: '2rem' }}
-      >
-        Add New Job
-      </Button>
+        <SearchBar 
+          placeholder="Search jobs by title or company..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-      <JobsGrid>
-        {jobs.map(job => (
-          <JobCard key={job.id}>
-            <JobInfo>
-              <Company>{job.company}</Company>
-              <Position>{job.position}</Position>
-              <Status status={job.status} className={`status-${job.status}`}>
+        <FilterBar>
+          <FilterButton active={filter === 'all'} onClick={() => setFilter('all')}>
+            All Jobs
+          </FilterButton>
+          <FilterButton active={filter === 'applied'} onClick={() => setFilter('applied')}>
+            Applied
+          </FilterButton>
+          <FilterButton active={filter === 'interview'} onClick={() => setFilter('interview')}>
+            Interview
+          </FilterButton>
+          <FilterButton active={filter === 'offer'} onClick={() => setFilter('offer')}>
+            Offer
+          </FilterButton>
+          <FilterButton active={filter === 'rejected'} onClick={() => setFilter('rejected')}>
+            Rejected
+          </FilterButton>
+        </FilterBar>
+
+        <JobsGrid>
+          {filteredJobs.map(job => (
+            <JobCard key={job.id}>
+              <StatusBadge status={job.status}>
                 {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
-              </Status>
-              <DateText>{new Date(job.date).toLocaleDateString()}</DateText>
-            </JobInfo>
-            <Actions>
-              <ActionButton onClick={() => handleEdit(job)} aria-label="Edit job">
-                {Icons.FaEdit({})}
-              </ActionButton>
-              <ActionButton onClick={() => handleDelete(job.id)} aria-label="Delete job">
-                {Icons.FaTrash({})}
-              </ActionButton>
-            </Actions>
-          </JobCard>
-        ))}
-      </JobsGrid>
+              </StatusBadge>
+              
+              <CompanyLogo>
+                <IconWrapper>
+                  {FaBuilding({})}
+                </IconWrapper>
+              </CompanyLogo>
 
-      <EditModal
-        job={selectedJob}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-      />
-    </JobsContainer>
+              <JobTitle>{job.position}</JobTitle>
+              <CompanyName>
+                <IconWrapper>
+                  {FaBuilding({})}
+                </IconWrapper>
+                {job.company}
+              </CompanyName>
+
+              <JobDetails>
+                <Detail>
+                  <IconWrapper>
+                    {FaBriefcase({})}
+                  </IconWrapper>
+                  {job.status === 'interview' ? 'On-site' : job.status === 'offer' ? 'Full-time' : 'Contract'}
+                </Detail>
+                <Detail>
+                  <IconWrapper>
+                    {FaCalendar({})}
+                  </IconWrapper>
+                  {new Date(job.date).toLocaleDateString()}
+                </Detail>
+              </JobDetails>
+
+              <ActionButton onClick={() => handleEdit(job)}>
+                <IconWrapper style={{ marginRight: '0.5rem' }}>
+                  {FaLink({})}
+                </IconWrapper>
+                View Application
+              </ActionButton>
+            </JobCard>
+          ))}
+        </JobsGrid>
+
+        <AddJobButton onClick={() => setShowAddJob(true)}>
+          {FaPlus({})}
+        </AddJobButton>
+
+        <EditModal
+          job={selectedJob}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSave}
+        />
+      </Container>
+    </IconContext.Provider>
   );
 };
 
