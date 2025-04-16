@@ -65,6 +65,8 @@ const GlobalStyles = createGlobalStyle`
   h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
     margin-bottom: 1rem;
+        padding-top: 3rem;
+
   }
 
   p {
